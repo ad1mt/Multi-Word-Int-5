@@ -7,5 +7,5 @@ Will compile and run on 32bit and 64bit environments.
 Written purely in Pascal to be portable and reliable (no assembly or C language code).
 
 Changes in this version:
--	Each Multi_Int_X2/3/4/V type is now in a separate unit
+-	Each big integer type is now in a separate unit
 - some code tidy-up
