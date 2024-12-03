@@ -8,4 +8,5 @@ Written purely in Pascal to be portable to any target and reliable (no assembly 
 
 Changes in this version:
 -	Each big integer type is now in a separate unit
+-	Bug fixes
 - some code tidy-up
