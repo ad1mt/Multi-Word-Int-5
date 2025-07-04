@@ -80,7 +80,7 @@ from string (decimal notation is assumed)
 from smaller Multi_Int_X types to larger ones (from larger to smaller requires explicit conversion via methods)
 
 Explicit conversion to/from other types is provided for the following types:
-to string in decimal notation with the ToStr method;
+to string in decimal notation with the IntToStr function or the ToStr method;
 to/from string in hex notation with ToHex and FromHex methods/functions;
 to any large integer type from any other with typecast functions:
  To_Multi_Int_XV,
@@ -108,13 +108,15 @@ Even(v)
 Negative(v)			this returns a boolean
 SqRoot(v,result,remainder)
 SqRoot(v,result,)
+Sqrt(v,result,remainder)
+Sqrt(v,result,)			Sqrt and Sqroot are the same functionally
 Abs(v)
 ShiftUp(v, Nbits)		this function has been replaced by the shl operator
 ShiftDown(v, Nbits)		this function has been replaced by the shr operator
 RotateUp(v, Nbits)		this function has been withdrawn
 RotateDown(v, Nbits)		this function has been withdrawn
 
-If the SqRoot (square root) function cannot give an exact result, it rounds down, and gives a remainder. Note that the SHL and SHR operators do not generate overflow exceptions, which is different to the behaviour of the equivalent native code operations.
+If the Sqrt (square root) function cannot give an exact result, it rounds down, and gives a remainder. Note that the SHL and SHR operators do not generate overflow exceptions, which is different to the behaviour of the equivalent native code operations.
 The RotateUp and RotateDown procedures have been withdrawn, because of problems with the internal logic. 
 
 The following methods are also provided to calling code:
@@ -217,7 +219,7 @@ else writeln('Hex R = N = ',R.ToHex);
 end.
 (*----------------------------*)
 
-Documentation v2.00
-Corresponds with Multi_Int Version 5.
+Documentation v2.0.3
+Corresponds with Multi_Int Version 5.0.3.
 
 
