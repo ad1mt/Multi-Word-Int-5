@@ -7,4 +7,5 @@ Will compile and run on 32bit and 64bit environments.
 Written purely in Pascal to be portable to any target and reliable (no assembly or C language code).
 
 Changes in this version:
--	IntToStr function with same functionality as the .ToStr method (for greater compatibility with existing code)
+-	IntToStr function with the same functionality as the .ToStr method (for greater compatibility with existing code)
+-	Sqrt function with the same functionality as the Sqroot function (for greater compatibility with existing code)
