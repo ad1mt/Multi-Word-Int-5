@@ -7,4 +7,4 @@ Will compile and run on 32bit and 64bit environments.
 Written purely in Pascal to be portable to any target and reliable (no assembly or C language code).
 
 Changes in this version:
--	Bug fix in Multi-Int-XV type
+-	Bug fix in Multi-Int-XV type. This bug is a bad one, please upgrade immediately.
