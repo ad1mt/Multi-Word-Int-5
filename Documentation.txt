@@ -4,7 +4,6 @@ Multi-Word-Int is a large integer library for the Free Pascal compiler.
 It is written entirely in Pascal, works in both 32bit and 64bit environments, so should be portable to any platform that is targeted by the compiler. It has been tested on Windows 10 with Intel CPU (32bit & 64bit), and Linux on Raspberry Pi ARM CPU (32bit & 64bit).
 The library is designed to be as easy to use as possible. In most cases, the large integer types are used in exactly the same way as the standard built-in integers. Automatic/implicit type conversion is provided for most other numerical types, and also for conversion from strings to large integer. Where automatic/implicit type conversion is not available, explicit type conversion functions/procedures/methods are provided.
 One the main design aims is to allow existing code to be changed to use the library with minimal changes.
-The performance of this library is not as good/fast as the best libraries available; the intention is to provide a basic but easy-to-use library, that is portable to any target. If you need very fast execution/performance, then please look at other libraries.
 
 Large Integer Types
 
@@ -19,23 +18,10 @@ Multi_Int_X4 :	fixed 4 word integer
 In a 64bit environment this equals 256 bits, in a 32bit environment this equals 128 bits.
 
 Multi_Int_XV :	variable size multiple word integer
-
-The Multi_Int_XV type has a minimum size of 2 half-words.
-
-The maximum size of the Multi_Int_XV type is defined by the calling code in a parameter to the initialisation procedure; this is in half-words. So, in a 64bit environment, if you specify 128, this equals 64 whole words, which equals 4096 bits. For example:   Multi_Int_Initialisation(32); // This equals 1024 bits
-
-From version 4.88 you can now specify the maximum size of the Multi_Int_XV type in number of decimal digits, by setting the optional DEC_DIGITS parameter; for example:
-Multi_Int_Initialisation(1000, DEC_DIGITS); 
-
-The maximum size can be changed by calling Multi_Int_Set_XV_Limit, where you can specify an alternate maximum size, like this:
- Multi_Int_Set_XV_Limit(48);  
-or by setting the optional DEC_DIGITS parameter to TRUE, like this:
- Multi_Int_Set_XV_Limit(2000,DEC_DIGITS);  
-
-As the number contained in a Multi_Int_XV variable gets larger, the size of the variable expands to a size that can contain the number. If the maximum size limit is reached, an overflow exception/error is generated.
-
-Individual variables of type Multi_Int_XV can no longer be resized explicitly; the Multi_Int_Reset_XV_Size function is no longer available, due to problems with implementation.
-
+The default size of this type is defined by the calling code in a parameter to the initialisation procedure; this is in half-words. So, if you specify 128, this equals 64 whole words, which equals 4096 bits in a 64bit environment. For example:   Multi_Init_Initialisation(64); 
+A maximum size is set at 2x the default in the initialisation function, but by calling Multi_Int_Set_XV_Limit, you can specify the maximum size of this type, like this:   Multi_Int_Set_XV_Limit(64);   
+As the number contained in a Multi_Int_XV variable gets larger, the size of the variable expands to a size that can contain the number. If the maximum size is reached, an overflow exception/error is generated.
+Individual variables of type Multi_Int_XV can be resized explicitly by calling the Multi_Int_Reset_XV_Size function, but in most cases this will not be necessary because it will be done automatically whenever a new value is assigned:   Multi_Int_Reset_XV_Size(V,64); 
 The larger the size of Multi_Int_XV variables, the slower the calculations become.
 The fixed-size types Multi_Int_X2, Multi_Int_X3 and Multi_Int_X4 are provided for maximum speed, the Multi_Int_XV type is provided for maximum flexibility. 
 
@@ -71,6 +57,8 @@ or - if the both signs are negative, the result is negative, otherwise the resul
 and - if the both signs are negative, the result is negative, otherwise the result is positive
 not - if the sign is positive, the result is negative, otherwise the result is positive
 
+Most operators abandon the calculation if an overflow happens, leaving the output variable in an undefined state. The << (shl) and >> (shr) operators behave differently, and which means overflow can be allowed in the calling code. See the technical notes section below for an explanation of how to do this.
+
 Type Conversion
 
 Conversion to/from other types is automatic/implicit, for the following types:
@@ -80,7 +68,7 @@ from string (decimal notation is assumed)
 from smaller Multi_Int_X types to larger ones (from larger to smaller requires explicit conversion via methods)
 
 Explicit conversion to/from other types is provided for the following types:
-to string in decimal notation with the IntToStr function or the ToStr method;
+to string in decimal notation with the ToStr method;
 to/from string in hex notation with ToHex and FromHex methods/functions;
 to any large integer type from any other with typecast functions:
  To_Multi_Int_XV,
@@ -106,18 +94,10 @@ The following operations/functions are provided:
 Odd(v)
 Even(v)
 Negative(v)			this returns a boolean
-SqRoot(v,result,remainder)
-SqRoot(v,result,)
-Sqrt(v,result,remainder)
-Sqrt(v,result,)			Sqrt and Sqroot are the same functionally
+Sqrt or SqRoot(v,result,remainder)
 Abs(v)
-ShiftUp(v, Nbits)		this function has been replaced by the shl operator
-ShiftDown(v, Nbits)		this function has been replaced by the shr operator
-RotateUp(v, Nbits)		this function has been withdrawn
-RotateDown(v, Nbits)		this function has been withdrawn
 
-If the Sqrt (square root) function cannot give an exact result, it rounds down, and gives a remainder. Note that the SHL and SHR operators do not generate overflow exceptions, which is different to the behaviour of the equivalent native code operations.
-The RotateUp and RotateDown procedures have been withdrawn, because of problems with the internal logic. 
+If the Sqrt (square root) function cannot give an exact result, it rounds down, and gives a remainder. 
 
 The following methods are also provided to calling code:
 v.Defined	this indicates if the variable is defined/undefined
@@ -137,26 +117,20 @@ Exceptions
 The unit exports a variable Multi_Int_RAISE_EXCEPTIONS_ENABLED, which can be set by the calling code, at any point. If set to TRUE, this enables run-time exceptions to be generated in the event of overflow and other errors. Multi_Int types have attributes named Defined and Overload which can be checked explicitly in the calling code. The unit also exports a boolean variable named Multi_Int_ERROR, which is also set after any operation that generates an error.  The Defined and Overload attributes and the Multi_Int_ERROR variable are always set, even if Multi_Int_RAISE_EXCEPTIONS_ENABLED variable is set to FALSE. If Multi_Int_RAISE_EXCEPTIONS_ENABLED is FALSE, the Defined and Overload attributes and the Multi_Int_ERROR variable can be checked from the calling code.
 Note that if Multi_Int_RAISE_EXCEPTIONS_ENABLED is FALSE, when converting Multi_Int variables to other types, the only way to detect overflow errors, is via the Multi_Int_ERROR variable.
 
+That the << (shl) and >> (shr) operators generate overflow exceptions, but these can be ignored in the calling code. If an overflow happens, an exception is created and the variable.overflow flag is set, but the operation (shl or shr) completes correctly, leaving the output variable in a consistent state. The following procedure allows the caller to ignore overflow:
+    (a) set Multi_Int_RAISE_EXCEPTIONS_ENABLED = FALSE
+    (b) perform the shift operation
+    (c) if the Multi_Int_ERROR is set to TRUE (indicating overflow), then set the variable.overflow flag = FALSE
+    (d) set Multi_Int_RAISE_EXCEPTIONS_ENABLED = TRUE
+
+
 Technical Notes
 
-Each of the four types have been separated into a single unit:
-	Unit_Multi_Int_X2
-	Unit_Multi_Int_X3
-	Unit_Multi_Int_X4
-	Unit_Multi_Int_XV
+The unit code requires ObjFPC mode with "advancedrecords", or Delphi mode.
 
-The unit code will compile & work correctly in Delphi mode or ObjFPC mode with "advancedrecords".
+The code will compile in both 32bit and 64bit environments. In the unit source there is a define "{$define 64bit}" or "{$define 32bit}" which is set depending on the environment, i.e. whether standard integers are 32bit or 64bit. This is set automatically to match the version of the compiler you are using, but can be overidden.
 
-The code will compile in both 32bit and 64bit environments. In the unit source there is a define "{$define 64bit}" or "{$define 32bit}" which is set depending on the environment is 32bit or 64bit. This is set automatically to match the version of the compiler you are using, but can be overidden.
-When using the 32bit compiler and/or running on a 32bit CPU, explicitly setting 64bit (in the unit source code) will produce faster execution.
-
-Note that on some Raspberry Pi CPUs, the compiler runs in 64bit mode, but the compiled code does not work correctly. Setting {$define 32bit} fixes the problem. A fix for this problem might be found in the future. On some Raspberry Pi CPUs, the -O3 optimisation causes the code to crash, whereas -O2 or -O1 optimisation works ok.
-
-Multi_Int_Initialisation can only be called once (previously it could be called many times, but this has been withdrawn due to problems with implementation). Multi_Int_Initialisation only exists in the Unit_Multi_Int_XV, and is not needed for the other types. Multi_Int_Initialisation has an optional parameter that specifies the maximum size the  Multi_Int_XV type, and this defaults to 16 half-words. Using the second parameter, the maximum size can be specified in units of decimal digits. Here are some examples:
-	Multi_Int_Initialisation;	// defaults to maximum size of 16 half-words
-	Multi_Int_Initialisation(32);	// specifies a maximum size of 32 half-words
-	Multi_Int_Initialisation(500,DEC_DIGITS);	// maximum size of 500 digits
-If you specify the size in decimal digits, the size is rounded up to nearest half-word, which means that the actual limit might be slightly more than the number of decimal digits you specified.
+Multi_Init_Initialisation can be called only once. If called a second time, an exception is generated.
 
 The standard integer types have been aliased as follows, to make the internal unit coding easier in both 32bit and 64bit environments, and are not intended for use by calling code; the unit code depends on these, so do not change them:
 	Multi_int8u = byte;
@@ -180,13 +154,13 @@ These are aliased to the above types depending on whether "{$define 64bit}" or "
 	MULTI_INT_2W_S = Multi_int64;
 	MULTI_INT_2W_U = Multi_int64u;
 
-There was previously a define in the source code {$define Overflow_Checks}, which was intended for use when compiler overflow checks were enabled. This no longer needs to be set.
+There are is a define in the source code {$define Overflow_Checks}, which is intended for use when compiler overflow checks are enabled. The {$define Overflow_Checks} does not switch on overflow checking for you; if you wish to use overflow checking, you still need to enable this in the usual way. In short, the rule is: if you want overflow checking, turn it on in the usual way and set {$define Overflow_Checks}. If you turn on overflow checking, but do not set {$define Overflow_Checks}, then the code will turn off overflow checking at bit shift operations and will not re-enable them. On Intel CPUs, some bit shift operations trigger an undesired overflow exception, and the code disables overflow checking around these operations. The {$define Overflow_Checks} tells the code that overflow checking needs to be re-enabled after bit shift operations.
 
 The code to overload the two-parameter Inc operator/procedure, has been withdrawn, because of problems with implementation.
 
 The library code defines a big integer type for internal use only:
-	Multi_Int_X5
-The Multi_Int_X5 type is required by the division routine.
+Multi_Int_X5 :	fixed 5 word integer
+This type is required by the division routine.
 
 The library code defines a unit named UBool to provide an exotic boolean type:
 UBool = (UBool_UNDEF,UBool_FALSE,UBool_TRUE)
@@ -199,11 +173,10 @@ There is a boolean to represent whether an overflow has occurred. There is a boo
 Here is a small Demo Program...
 (*----------------------------*)
 Program hello_multi_int;
-uses Unit_Multi_Int_XV;
+uses Multi_Int;
 type Big_Int= Multi_int_XV;
 var	N,P,R,Q	: Big_Int;
 begin
-Multi_Int_Initialisation(10);
 // literal numbers > 64bit MAXINT should be specified as strings
 N:= '340282366920938463463374607431768211455';  // equals ((2 ** 128) - 1)
 P:= ((Big_Int(2) ** Big_Int(128)) – 1); // sometimes explicit type casting is necessary
@@ -219,7 +192,5 @@ else writeln('Hex R = N = ',R.ToHex);
 end.
 (*----------------------------*)
 
-Documentation v2.0.3
-Corresponds with Multi_Int Version 5.0.3.
-
+Documentation v1.11
 
