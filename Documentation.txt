@@ -52,10 +52,10 @@ The standard comparison/logical operators are provided:
 These can be used in expressions in the same was as standard built-in integers.
 
 The bitwise operations are performed on the absolute values. The sign of the result is then calculated according to the following rules:
-xor - if the signs are different, the result is negative, otherwise the result is positive
-or - if both signs are negative, the result is negative, otherwise the result is positive
-and - if both signs are negative, the result is negative, otherwise the result is positive
-not - if the sign is positive, the result is negative, otherwise the result is positive
+xor	- if the signs are different, the result is negative, otherwise the result is positive
+or	- if both signs are negative, the result is negative, otherwise the result is positive
+and	- if both signs are negative, the result is negative, otherwise the result is positive
+not	- if the sign is positive, the result is negative, otherwise the result is positive
 
 Most operators abandon the calculation if an overflow happens, leaving the output variable in an undefined state. The << (shl) and >> (shr) operators behave differently, which means overflow can be allowed in the calling code. See the technical notes section below for an explanation of how to do this.
 
@@ -93,9 +93,11 @@ Other operations/functions
 The following operations/functions are provided:
 Odd(v)
 Even(v)
-Negative(v)			these return a boolean
+Negative(v)		these return a boolean
 Sqrt or SqRoot(v,result,remainder)
 Abs(v)
+BsrMulti(v)		this is the equivalent of the BsrWord series of functions
+nlz_MultiBits(v)	this returns the number leading zero bits
 
 If the Sqrt (square root) function cannot give an exact result, it rounds down, and gives a remainder. 
 
@@ -173,7 +175,7 @@ There is a boolean to represent whether an overflow has occurred. There is a boo
 Here is a small Demo Program...
 (*----------------------------*)
 Program hello_multi_int;
-uses Multi_Int;
+uses Multi_Int_XV;
 type Big_Int= Multi_int_XV;
 var	N,P,R,Q	: Big_Int;
 begin
@@ -192,5 +194,6 @@ else writeln('Hex R = N = ',R.ToHex);
 end.
 (*----------------------------*)
 
-Documentation v1.13
+Library version 5.19
+Documentation v1.19
 
